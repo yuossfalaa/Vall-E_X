@@ -9,7 +9,6 @@ arabic_punctuations = '''`÷×؛<>_()*&^%][ـ،/:"؟.,'{}~¦+|!”…“–ـ'''
 english_punctuations = string.punctuation
 punctuations_list = arabic_punctuations + english_punctuations
 
-
 def normalize_numbers(text):
     pattern = r"\d+"
     matches = re.findall(pattern, text)

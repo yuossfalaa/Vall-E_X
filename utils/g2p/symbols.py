@@ -54,8 +54,10 @@ _letters = 'กขฃคฆงจฉชซฌญฎฏฐฑฒณดตถท�
 # # cjke_cleaners2
 _pad        = '_'
 _punctuation = ',.!?-~…'
-_letters = 'NQabdefghijklmnopstuvwxyzɑæʃʑçɯɪɔɛɹðəɫɥɸʊɾʒθβŋɦ⁼ʰ`^#*=ˈˌ→↓↑ '
+_letters = 'NQabdefghijklmnopstuvwxyzɑæʃʑçɯɪɔɛɹðəɫɥɸʊɾʒθβŋɦ⁼ʰ`^#*=ˈˌ→↓↑qʕ͡ˤːʔħɣr '
 
+#add letters for arabic ʕ
+'''q, ʕ, ͡, ˤ, ː, ʔ, ħ, ɣ, r'''
 
 '''# shanghainese_cleaners
 _pad        = '_'

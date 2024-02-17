@@ -1,10 +1,11 @@
 import re
-from utils.g2p.japanese import japanese_to_romaji_with_accent, japanese_to_ipa, japanese_to_ipa2, japanese_to_ipa3
-from utils.g2p.mandarin import number_to_chinese, chinese_to_bopomofo, latin_to_bopomofo, chinese_to_romaji, \
-    chinese_to_lazy_ipa, chinese_to_ipa, chinese_to_ipa2
-from utils.g2p.english import english_to_lazy_ipa, english_to_ipa2, english_to_lazy_ipa2
 
-patterns = [r'\[EN\](.*?)\[EN\]', r'\[ZH\](.*?)\[ZH\]', r'\[JA\](.*?)\[JA\]']
+from utils.g2p.arabic import arabic_to_ipa
+from utils.g2p.english import english_to_ipa2
+from utils.g2p.japanese import japanese_to_romaji_with_accent, japanese_to_ipa2
+from utils.g2p.mandarin import number_to_chinese, chinese_to_bopomofo, latin_to_bopomofo, chinese_to_ipa
+
+patterns = [r'\[EN\](.*?)\[EN\]', r'\[ZH\](.*?)\[ZH\]', r'\[JA\](.*?)\[JA\]', r'\[AR\](.*?)\[AR\]']
 
 
 def japanese_cleaners(text):
@@ -45,6 +46,8 @@ def cje_cleaners(text):
             lang = 'zh'
         elif "[JA]" in text_segment:
             lang = 'ja'
+        elif "[AR]" in text_segment:
+            lang = 'ar'
         else:
             raise ValueError("If you see this error, please report this bug to issues.")
         outputs += phon
@@ -63,6 +66,10 @@ def clean_one(text):
     if text.find('[EN]') != -1:
         text = re.sub(r'\[EN\](.*?)\[EN\]',
                       lambda x: english_to_ipa2(x.group(1)) + ' ', text)
+    if text.find('[AR]') != -1:
+        text = re.sub(r'\[AR\](.*?)\[AR\]',
+                      lambda x: arabic_to_ipa(x.group(1)) + ' ', text)
     text = re.sub(r'\s+$', '', text)
     text = re.sub(r'([^\.,!\?\-…~])$', r'\1.', text)
     return text
+
