@@ -10,7 +10,7 @@ english_punctuations = string.punctuation
 punctuations_list = arabic_punctuations + english_punctuations
 
 
-def remove_numbers(text):
+def normalize_numbers(text):
     pattern = r"\d+"
     matches = re.findall(pattern, text)
     for match in matches:
@@ -36,7 +36,7 @@ def remove_punctuations(text):
 
 
 def arabic_cleaner(text):
-    text = remove_numbers(text)
+    text = normalize_numbers(text)
     text = normalize_arabic(text)
     text = remove_punctuations(text)
     text = remove_extra_space(text)
@@ -47,3 +47,4 @@ def arabic_to_ipa(text):
     text = arabic_cleaner(text)
     arabicG2P = ArabicG2P()
     return arabicG2P.G2P(text)
+
