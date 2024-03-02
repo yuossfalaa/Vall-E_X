@@ -1,9 +1,6 @@
-import os
-
-import torch.multiprocessing
+from lhotse.recipes import mgb2
 
 from bin.tokenizer import Tokenize
-from lhotse.recipes import  mgb2
 
 if __name__ == '__main__':
     try:

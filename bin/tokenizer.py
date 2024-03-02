@@ -66,7 +66,7 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
             f"{output_dir}/{prefix}_encodec_{partition}"
         )
         cut_set = cut_set.resample(24000)
-        '''with torch.no_grad():
+        with torch.no_grad():
             cut_set = cut_set.compute_and_store_features_batch(
                 extractor=AudioTokenExtractor(AudioTokenConfig()),
                 storage_path=storage_path,
@@ -74,12 +74,16 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
                 batch_duration=batch_duration,
                 collate=False,
                 overwrite=True,
-                storage_type=NumpyHdf5Writer)'''
+                storage_type=NumpyHdf5Writer)
         # TextTokenizer
         cut_set = cut_set
         for c in tqdm(cut_set):
-            print(c)
-            break
+            phoneme_tokens,lang = text_tokenizer.tokenize(c.supervisions[0].text)
+            c.supervisions[0].custom["tokens"] = {"text": phoneme_tokens}
+            if lang:
+                c.supervisions[0].custom["lang"] = lang
+            cuts_filename = f"{prefix}cuts_{partition}.{suffix}"
+            cut_set.to_file(f"{output_dir}/{cuts_filename}")
 
 
 
