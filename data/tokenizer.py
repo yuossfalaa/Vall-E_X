@@ -1,20 +1,13 @@
-import re
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Pattern, Union
-from lhotse.features import FeatureExtractor
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import torch
 import torchaudio
 from encodec import EncodecModel
 from encodec.utils import convert_audio
+from lhotse.features import FeatureExtractor
 from lhotse.utils import Seconds, compute_num_frames
-
-try:
-    from pypinyin import Style, pinyin
-    from pypinyin.style._utils import get_finals, get_initials
-except Exception:
-    pass
 
 
 def remove_encodec_weight_norm(model):
@@ -62,7 +55,7 @@ class AudioTokenizer:
         if not device:
             device = torch.device("cpu")
             if torch.cuda.is_available():
-                device = torch.device("cuda:0")
+                device = torch.device("cuda")
             if torch.backends.mps.is_available():
                 device = torch.device("mps")
 
@@ -96,6 +89,7 @@ def tokenize_audio(tokenizer: AudioTokenizer, audio):
     with torch.no_grad():
         encoded_frames = tokenizer.encode(wav)
     return encoded_frames
+
 
 @dataclass
 class AudioTokenConfig:
@@ -206,7 +200,7 @@ class AudioTokenExtractor(FeatureExtractor):
 
 if __name__ == "__main__":
     model = EncodecModel.encodec_model_24khz()
-    model.set_target_bandwidth(6.0) # to use 8 codebooks
+    model.set_target_bandwidth(6.0)  # to use 8 codebooks
 
     samples = torch.from_numpy(np.random.random([4, 1, 1600])).type(
         torch.float32
