@@ -1,13 +1,15 @@
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, Optional, Union
-
+from typing import Any, Dict, List, Optional, Pattern, Union
 import numpy as np
 import torch
 import torchaudio
+import re
 from encodec import EncodecModel
 from encodec.utils import convert_audio
 from lhotse.features import FeatureExtractor
 from lhotse.utils import Seconds, compute_num_frames
+from phonemizer.separator import Separator
+from utils.g2p.Arabic_G2P_Model.ArabicG2P import ArabicG2P
 
 
 def remove_encodec_weight_norm(model):
@@ -196,6 +198,42 @@ class AudioTokenExtractor(FeatureExtractor):
             )
             batch_codes.append(codes[..., :expected_num_frames])
         return [codes.cpu().permute(1, 0).numpy() for codes in batch_codes]
+
+
+class TextTokenizer:
+    def __init__(
+            self,
+            separator=Separator(word="_", syllable="-", phone="|"),
+    ) -> None:
+        self.backend = ArabicG2P()
+        self.separator = separator
+
+    def to_list(self, phonemized: str) -> List[str]:
+        fields = []
+        for word in phonemized.split(self.separator.word):
+            # "ɐ    m|iː|n?"    ɹ|ɪ|z|ɜː|v; h|ɪ|z.
+            pp = re.findall(r"\w+|[^\w\s]", word, re.UNICODE)
+            fields.extend(
+                [p for p in pp if p != self.separator.phone]
+                + [self.separator.word]
+            )
+        assert len("".join(fields[:-1])) == len(phonemized) - phonemized.count(
+            self.separator.phone
+        )
+        return fields[:-1]
+
+    def __call__(self, text) -> List[List[str]]:
+        '''if isinstance(text, str):
+            text = [text]'''
+
+        phonemized = self.backend.G2P(text)
+        return [self.to_list(p) for p in phonemized]
+
+
+def tokenize_text(tokenizer: TextTokenizer, text: str) -> List[str]:
+    phonemes = tokenizer(text.strip())
+    phonemes = [item for sublist in phonemes for item in sublist]
+    return phonemes  # k2symbols
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ class SpeechSynthesisDataset(torch.utils.data.Dataset):
             'audio': (B x NumSamples) float tensor
             'audio_lens': (B, ) int tensor
             'text': str
+            'text_language' :str
             'audio_features': (B x NumFrames x NumFeatures) float tensor
             'audio_features_lens': (B, ) int tensor
             'text_tokens': (B x NumTextTokens) long tensor
@@ -69,10 +70,11 @@ class SpeechSynthesisDataset(torch.utils.data.Dataset):
         text_tokens, text_tokens_lens = self.text_token_collater(
             [cut.supervisions[0].custom["tokens"]["text"] for cut in cuts]
         )
-
+        text_language = cuts[0].supervisions[0].custom["lang"]
         return {
             "utt_id": [cut.id for cut in cuts],
             "text": [cut.supervisions[0].text for cut in cuts],
+            "text_language": text_language,
             "audio": audio,
             "audio_lens": audio_lens,
             "audio_features": audio_features,

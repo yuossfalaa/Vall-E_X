@@ -19,6 +19,7 @@ class PhonemeBpeTokenizer:
         phonemes = phonemes.replace(" ", "_")
         # 3. tokenize phonemes
         phoneme_tokens = self.tokenizer.encode(phonemes).ids
+        langs = ['ar' for tokens in phoneme_tokens]
         assert (len(phoneme_tokens) == len(langs))
         if not len(phoneme_tokens):
             raise ValueError("Empty text is given")
