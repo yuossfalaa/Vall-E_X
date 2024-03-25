@@ -60,6 +60,8 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
         )
         cut_set = cut_set.resample(24000)
         cut_set = cut_set.trim_to_supervisions(keep_overlapping=False)
+        # For Testing Code
+        cut_set = cut_set.subset(first=300)
         print(cut_set.describe())
         with torch.no_grad():
             cut_set = cut_set.compute_and_store_features_batch(
@@ -85,3 +87,9 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
                 c.supervisions[0].custom["lang"] = lang[0]
             cuts_filename = f"{prefix}cuts_{partition}.{suffix}"
             cut_set.to_file(f"{output_dir}/{cuts_filename}")
+        cuts = cut_set.split(3)
+        # For Testing Code
+        cuts[0].to_file(f"{output_dir}/cuts_train.jsonl.gz")
+        cuts[1].to_file(f"{output_dir}/cuts_dev.jsonl.gz")
+        cuts[2].to_file(f"{output_dir}/cuts_test.jsonl.gz")
+

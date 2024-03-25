@@ -86,16 +86,23 @@ class TextTokenCollater:
 
     def __call__(self, texts: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         tokens_seqs = [[p for p in text] for text in texts]
+
         max_len = len(max(tokens_seqs, key=len))
 
+        '''seqs = [
+                  ([self.bos_symbol] if self.add_bos else [])
+                  + list(seq)
+                  + ([self.eos_symbol] if self.add_eos else [])
+                  + [self.pad_symbol] * (max_len - len(seq))
+                  for seq in tokens_seqs
+              ]'''
         seqs = [
-            ([self.bos_symbol] if self.add_bos else [])
-            + list(seq)
-            + ([self.eos_symbol] if self.add_eos else [])
-            + [self.pad_symbol] * (max_len - len(seq))
+            ([self.token2idx[self.bos_symbol]] if self.add_bos else [])  # Tokenize <bos>
+            + list(seq) #the sequence
+            + ([self.token2idx[self.eos_symbol]] if self.add_eos else [])  # Tokenize <eos>
+            + [self.token2idx[self.pad_symbol]] * (max_len - len(seq))  # Tokenize <pad>
             for seq in tokens_seqs
         ]
-
         tokens_batch = torch.from_numpy(
             np.array(
                 [seq for seq in seqs],
@@ -115,6 +122,6 @@ class TextTokenCollater:
 
 def get_text_token_collater() -> TextTokenCollater:
     collater = TextTokenCollater(
-        ['0'], add_bos=False, add_eos=False
+        ['0'], add_bos=True, add_eos=True
     )
     return collater
