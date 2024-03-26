@@ -234,7 +234,7 @@ def get_parser():
     parser.add_argument(
         "--visualize",
         type=str2bool,
-        default=False,
+        default=True,
         help="visualize model results in eval step.",
     )
 
@@ -801,6 +801,7 @@ def train_one_epoch(
             model.train()
 
     loss_value = tot_loss["loss"] / tot_loss["frames"]
+    logging.info("Loss: {}".format(loss_value))
     params.train_loss = loss_value
     if params.train_loss < params.best_train_loss:
         params.best_train_epoch = params.cur_epoch
