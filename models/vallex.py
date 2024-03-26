@@ -5,8 +5,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.icefall_utils import make_pad_mask
 from torchmetrics.classification import MulticlassAccuracy
+
+from utils.icefall_utils import make_pad_mask
+# from torchmetrics.classification import MulticlassAccuracy
 
 from data.input_strategies import PromptedFeatures
 from modules.embedding import SinePositionalEmbedding, TokenEmbedding
@@ -39,23 +41,23 @@ class VALLF(nn.Module):
     """
 
     def __init__(
-            self,
-            d_model: int,
-            nhead: int,
-            num_layers: int,
-            norm_first: bool = True,
-            add_prenet: bool = False,
-            decoder_cls: Union[
-                nn.TransformerDecoder, nn.TransformerEncoder
-            ] = nn.TransformerDecoder,
-            decoder_layer_cls: Union[
-                TransformerDecoderLayer, TransformerEncoderLayer
-            ] = TransformerDecoderLayer,
-            prefix_mode: int = 0,
-            share_embedding: bool = True,
-            nar_scale_factor: float = 1.0,
-            prepend_bos: bool = True,
-            num_quantizers: int = 8,
+        self,
+        d_model: int,
+        nhead: int,
+        num_layers: int,
+        norm_first: bool = True,
+        add_prenet: bool = False,
+        decoder_cls: Union[
+            nn.TransformerDecoder, nn.TransformerEncoder
+        ] = nn.TransformerDecoder,
+        decoder_layer_cls: Union[
+            TransformerDecoderLayer, TransformerEncoderLayer
+        ] = TransformerDecoderLayer,
+        prefix_mode: int = 0,
+        share_embedding: bool = True,
+        nar_scale_factor: float = 1.0,
+        prepend_bos: bool = True,
+        num_quantizers: int = 8,
     ):
         """
         Args:
@@ -140,6 +142,7 @@ class VALLF(nn.Module):
         self.ar_predict_layer = nn.Linear(
             d_model, NUM_AUDIO_TOKENS + 1, bias=False
         )
+
         self.ar_accuracy_metric = MulticlassAccuracy(
             NUM_AUDIO_TOKENS + 1,
             top_k=10,
@@ -147,6 +150,7 @@ class VALLF(nn.Module):
             multidim_average="global",
             ignore_index=NUM_AUDIO_TOKENS,
         )
+
         self.rng = random.Random(0)
         self.num_heads = nhead
         self.prefix_mode = prefix_mode
@@ -254,13 +258,27 @@ class VALLF(nn.Module):
                     self.nar_predict_layers[
                         j
                     ].weight = self.nar_audio_embeddings[j + 2].weight
+
             self.nar_accuracy_metric = MulticlassAccuracy(
-                NUM_AUDIO_TOKENS + 1,
-                top_k=10,
-                average="micro",
-                multidim_average="global",
-                ignore_index=NUM_AUDIO_TOKENS,
+                 NUM_AUDIO_TOKENS + 1,
+                 top_k=10,
+                 average="micro",
+                 multidim_average="global",
+                 ignore_index=NUM_AUDIO_TOKENS,
             )
+
+    #     self.apply(self._init_weights)
+
+    # def _init_weights(self, module):
+    #     if isinstance(module, (nn.Linear)):
+    #         module.weight.data.normal_(mean=0.0, std=0.02)
+    #         if isinstance(module, nn.Linear) and module.bias is not None:
+    #             module.bias.data.zero_()
+    #     elif isinstance(module, nn.LayerNorm):
+    #         module.bias.data.zero_()
+    #         module.weight.data.fill_(1.0)
+    #     elif isinstance(module, nn.Embedding):
+    #         module.weight.data.normal_(mean=0.0, std=1.0)
 
     def stage_parameters(self, stage: int = 1) -> Iterator[nn.Parameter]:
         assert stage > 0
@@ -277,7 +295,7 @@ class VALLF(nn.Module):
                     yield param
 
     def stage_named_parameters(
-            self, stage: int = 1
+        self, stage: int = 1
     ) -> Iterator[Tuple[str, nn.Parameter]]:
         assert stage > 0
         if stage == 1:
@@ -340,10 +358,10 @@ class VALLF(nn.Module):
                 for b in range(codes.shape[0]):
                     start = self.rng.randint(0, y_lens[b].item() - prefix_len)
                     y_prompts_codes.append(
-                        torch.clone(codes[b, start: start + prefix_len])
+                        torch.clone(codes[b, start : start + prefix_len])
                     )
                     codes[
-                    b, start: start + prefix_len, nar_stage
+                        b, start : start + prefix_len, nar_stage
                     ] = NUM_AUDIO_TOKENS
                 y_prompts_codes = torch.stack(y_prompts_codes, dim=0)
             else:
@@ -364,32 +382,32 @@ class VALLF(nn.Module):
         return y_emb, prefix_len
 
     def forward(
-            self,
-            x: torch.Tensor,
-            x_lens: torch.Tensor,
-            y: Union[torch.Tensor, PromptedFeatures],
-            y_lens: Union[torch.Tensor, PromptedFeatures],
-            reduction: str = "sum",
-            train_stage: int = 0,
-            **kwargs,
+        self,
+        x: torch.Tensor,
+        x_lens: torch.Tensor,
+        y: Union[torch.Tensor, PromptedFeatures],
+        y_lens: Union[torch.Tensor, PromptedFeatures],
+        reduction: str = "sum",
+        train_stage: int = 0,
+        **kwargs,
     ) -> Tuple[torch.Tensor, Union[torch.Tensor, None]]:
         """
-               Args:
-                 x:
-                   A 2-D tensor of shape (N, S).
-                 x_lens:
-                   A 1-D tensor of shape (N,). It contains the number of tokens in `x`
-                   before padding.
-                 y:
-                   A 3-D tensor of shape (N, T, 8).
-                 y_lens:
-                   A 1-D tensor of shape (N,). It contains the number of tokens in `x`
-                   before padding.
-                 train_stage:
-                   0: AR & NAR modules, 1: AR modules, 2: NAR modules
-               Returns:
-                 Return the predicted audio code matrix, cross-entropy loss and Top-10 accuracy.
-               """
+        Args:
+          x:
+            A 2-D tensor of shape (N, S).
+          x_lens:
+            A 1-D tensor of shape (N,). It contains the number of tokens in `x`
+            before padding.
+          y:
+            A 3-D tensor of shape (N, T, 8).
+          y_lens:
+            A 1-D tensor of shape (N,). It contains the number of tokens in `x`
+            before padding.
+          train_stage:
+            0: AR & NAR modules, 1: AR modules, 2: NAR modules
+        Returns:
+          Return the predicted audio code matrix, cross-entropy loss and Top-10 accuracy.
+        """
         assert x.ndim == 2, x.shape
         assert x_lens.ndim == 1, x_lens.shape
 
@@ -404,6 +422,9 @@ class VALLF(nn.Module):
         assert y.ndim == 3, y.shape
         assert y_lens.ndim == 1, y_lens.shape
 
+        prefix_mode = self.prefix_mode
+        if prefix_mode == 3:
+            prefix_mode = random.randint(0, 1)
         # NOTE: x has been padded in TextTokenCollater
         x_mask = make_pad_mask(x_lens).to(x.device)
 
@@ -474,15 +495,15 @@ class VALLF(nn.Module):
             x = self.nar_text_position(x)
 
             y_emb, prefix_len = self._prepare_prompts(
-                y, y_lens, codes, nar_stage, y_prompts_codes
+                y, y_lens, codes, nar_stage, y_prompts_codes, prefix_mode
             )
 
             y_len = y_lens.max()
             targets = codes[..., nar_stage] + NUM_AUDIO_TOKENS * y_mask_int
-            if self.prefix_mode in [2, 4]:
+            if prefix_mode in [2, 4]:
                 targets = targets
                 y_mask = F.pad(y_mask, (y_emb.shape[1] - y_len, 0), value=False)
-            elif self.prefix_mode == 1:
+            elif prefix_mode == 1:
                 targets = targets[:, prefix_len:]
             else:
                 assert prefix_len == 0
@@ -498,9 +519,9 @@ class VALLF(nn.Module):
                 memory_mask=None,
                 memory_key_padding_mask=x_mask,
             )
-            if self.prefix_mode != 0:
+            if prefix_mode != 0:
                 y_dec = y_dec[:, prefix_len:]
-                if self.prefix_mode == 4:
+                if prefix_mode == 4:
                     prefix_len = 0  # reset for Top10Accuracy metric
 
             logits = self.nar_predict_layers[nar_stage - 1](y_dec).permute(
@@ -509,24 +530,24 @@ class VALLF(nn.Module):
             # loss
             total_length = (y_lens).sum().type(torch.float32)
             total_loss += (
-                    F.cross_entropy(
-                        logits,
-                        targets,
-                        ignore_index=NUM_AUDIO_TOKENS,
-                        reduction=reduction,
-                    )
-                    * (total_length / (total_length - prefix_len * x.shape[0]))
+                F.cross_entropy(
+                    logits,
+                    targets,
+                    ignore_index=NUM_AUDIO_TOKENS,
+                    reduction=reduction,
+                )
+                * (total_length / (total_length - prefix_len * x.shape[0]))
             )
             metrics["NarTop10Accuracy"] = (
-                    self.nar_accuracy_metric(
-                        F.pad(
-                            logits.detach(),
-                            (0, 0, 0, 1, 0, 0),
-                            value=logits.min().cpu().item(),
-                        ),
-                        targets,
-                    ).item()
-                    * total_length
+                self.nar_accuracy_metric(
+                    F.pad(
+                        logits.detach(),
+                        (0, 0, 0, 1, 0, 0),
+                        value=logits.min().cpu().item(),
+                    ),
+                    targets,
+                ).item()
+                * total_length
             )
 
         if train_stage == 0:
@@ -535,30 +556,30 @@ class VALLF(nn.Module):
         return ((x, codes), total_loss, metrics)
 
     def inference(
-            self,
-            x: torch.Tensor,
-            x_lens: torch.Tensor,
-            y: torch.Tensor,
-            enroll_x_lens: Union[torch.Tensor, None] = None,
-            top_k: int = -100,
-            temperature: float = 1.0,
+        self,
+        x: torch.Tensor,
+        x_lens: torch.Tensor,
+        y: torch.Tensor,
+        enroll_x_lens: Union[torch.Tensor, None] = None,
+        top_k: int = -100,
+        temperature: float = 1.0,
     ) -> torch.Tensor:
         """
-                Args:
-                  x:
-                    A 2-D tensor of shape (1, S).
-                  x_lens:
-                    A 1-D tensor of shape (1,). It contains the number of tokens in `x`
-                    before padding.
-                  y:
-                    A 3-D tensor of shape (1, T, 8).
-                  top_k: (`optional`) int
-                    The number of highest probability tokens to keep for top-k-filtering. Default to -100.
-                  temperature: (`optional`) float
-                    The value used to module the next token probabilities. Must be strictly positive. Default to 1.0.
-                Returns:
-                  Return the predicted audio code matrix and cross-entropy loss.
-                """
+        Args:
+          x:
+            A 2-D tensor of shape (1, S).
+          x_lens:
+            A 1-D tensor of shape (1,). It contains the number of tokens in `x`
+            before padding.
+          y:
+            A 3-D tensor of shape (1, T, 8).
+          top_k: (`optional`) int
+            The number of highest probability tokens to keep for top-k-filtering. Default to -100.
+          temperature: (`optional`) float
+            The value used to module the next token probabilities. Must be strictly positive. Default to 1.0.
+        Returns:
+          Return the predicted audio code matrix and cross-entropy loss.
+        """
         assert x.ndim == 2, x.shape
         assert x_lens.ndim == 1, x_lens.shape
         assert y.ndim == 3, y.shape
@@ -607,9 +628,9 @@ class VALLF(nn.Module):
             )
 
             if (
-                    torch.argmax(logits, dim=-1)[0] == NUM_AUDIO_TOKENS
-                    or samples[0, 0] == NUM_AUDIO_TOKENS
-                    or (y.shape[1] - prefix_len) > x_lens.max() * 16
+                torch.argmax(logits, dim=-1)[0] == NUM_AUDIO_TOKENS
+                or samples[0, 0] == NUM_AUDIO_TOKENS
+                or (y.shape[1] - prefix_len) > x_lens.max() * 16
             ):
                 if prompts.shape[1] == y.shape[1]:
                     raise SyntaxError(
@@ -621,13 +642,13 @@ class VALLF(nn.Module):
 
             y = torch.concat([y, samples], dim=1)
 
-        codes = [y[:, prefix_len + int(self.ar_audio_prepend_bos):]]
+        codes = [y[:, prefix_len + int(self.ar_audio_prepend_bos) :]]
         if self.num_quantizers == 1:
             return torch.stack(codes, dim=-1)
 
         # Non-AR Decoders
         y_emb = self.nar_audio_embeddings[0](
-            y[:, int(self.ar_audio_prepend_bos):]
+            y[:, int(self.ar_audio_prepend_bos) :]
         )
         if self.prefix_mode in [2, 4]:  # Exclude enrolled_phonemes
             enrolled_len = enroll_x_lens.max().item()
@@ -635,7 +656,7 @@ class VALLF(nn.Module):
             text = torch.concat(
                 [
                     text[:, :1],
-                    text[:, enrolled_len - 1:],
+                    text[:, enrolled_len - 1 :],
                 ],
                 dim=1,
             )
@@ -652,10 +673,10 @@ class VALLF(nn.Module):
                 )
 
         for i, (predict_layer, embedding_layer) in enumerate(
-                zip(
-                    self.nar_predict_layers,
-                    self.nar_audio_embeddings[1:],
-                )
+            zip(
+                self.nar_predict_layers,
+                self.nar_audio_embeddings[1:],
+            )
         ):
             y_pos = self.nar_audio_prenet(y_emb)
             y_pos = self.nar_audio_position(y_pos)
@@ -681,11 +702,11 @@ class VALLF(nn.Module):
         return torch.stack(codes, dim=-1)
 
     def visualize(
-            self,
-            predicts: Tuple[torch.Tensor],
-            batch: Dict[str, Union[List, torch.Tensor]],
-            output_dir: str,
-            limit: int = 4,
+        self,
+        predicts: Tuple[torch.Tensor],
+        batch: Dict[str, Union[List, torch.Tensor]],
+        output_dir: str,
+        limit: int = 4,
     ) -> None:
         visualize(predicts, batch, output_dir, limit=limit)
 
@@ -696,16 +717,16 @@ class VALLE(VALLF):
     """
 
     def __init__(
-            self,
-            d_model: int,
-            nhead: int,
-            num_layers: int,
-            norm_first: bool = True,
-            add_prenet: bool = False,
-            prefix_mode: int = 0,
-            share_embedding: bool = True,
-            nar_scale_factor: float = 1.0,
-            **kwargs,
+        self,
+        d_model: int,
+        nhead: int,
+        num_layers: int,
+        norm_first: bool = True,
+        add_prenet: bool = False,
+        prefix_mode: int = 0,
+        share_embedding: bool = True,
+        nar_scale_factor: float = 1.0,
+        **kwargs,
     ):
         """
         Args:
@@ -739,34 +760,32 @@ class VALLE(VALLF):
         self.nar_language_embedding = TokenEmbedding(d_model, len(self.language_ID))
 
     def forward(
-            self,
-            x: torch.Tensor,
-            x_lens: torch.Tensor,
-            y: Union[torch.Tensor, PromptedFeatures],
-            y_lens: Union[torch.Tensor, PromptedFeatures],
-            prompt_language: str = None,
-            text_language: str = None,
-            reduction: str = "sum",
-            train_stage: int = 0,
-            **kwargs,
-    ):
+        self,
+        x: torch.Tensor,
+        x_lens: torch.Tensor,
+        y: Union[torch.Tensor, PromptedFeatures],
+        y_lens: Union[torch.Tensor, PromptedFeatures],
+        reduction: str = "sum",
+        train_stage: int = 0,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, Union[torch.Tensor, None]]:
         """
-               Args:
-                 x:
-                   A 2-D tensor of shape (N, S).
-                 x_lens:
-                   A 1-D tensor of shape (N,). It contains the number of tokens in `x`
-                   before padding.
-                 y:
-                   A 3-D tensor of shape (N, T, 8).
-                 y_lens:
-                   A 1-D tensor of shape (N,). It contains the number of tokens in `x`
-                   before padding.
-                 train_stage:
-                   0: AR & NAR modules, 1: AR modules, 2: NAR modules
-               Returns:
-                 Return the predicted audio code matrix, cross-entropy loss and Top-10 accuracy.
-               """
+        Args:
+          x:
+            A 2-D tensor of shape (N, S).
+          x_lens:
+            A 1-D tensor of shape (N,). It contains the number of tokens in `x`
+            before padding.
+          y:
+            A 3-D tensor of shape (N, T, 8).
+          y_lens:
+            A 1-D tensor of shape (N,). It contains the number of tokens in `x`
+            before padding.
+          train_stage:
+            0: AR & NAR modules, 1: AR modules, 2: NAR modules
+        Returns:
+          Return the predicted audio code matrix, cross-entropy loss and Top-10 accuracy.
+        """
         assert x.ndim == 2, x.shape
         assert x_lens.ndim == 1, x_lens.shape
 
@@ -781,14 +800,16 @@ class VALLE(VALLF):
         assert y.ndim == 3, y.shape
         assert y_lens.ndim == 1, y_lens.shape
 
+        prefix_mode = self.prefix_mode
+        if prefix_mode == 3:
+            prefix_mode = random.randint(0, 1)
+
         # NOTE: x has been padded in TextTokenCollater
         x_mask = make_pad_mask(x_lens).to(x.device)
         y_mask = make_pad_mask(y_lens).to(y.device)
         y_mask_int = y_mask.type(torch.int64)
 
         text = x
-
-
         codes = y.type(torch.int64) * (1 - y_mask_int.unsqueeze(dim=-1))
 
         y, targets = self.pad_y_eos(
@@ -810,17 +831,12 @@ class VALLE(VALLF):
         # AR Decoder
         if train_stage in [0, 1]:
             x = self.ar_text_embedding(text)
-
-            # Add language embedding
-            prompt_language_id = torch.LongTensor(np.array([self.language_ID[prompt_language]])).to(x.device)
-            if isinstance(text_language, str):
-                text_language_id = torch.LongTensor(np.array([self.language_ID[text_language]])).to(x.device)
-            elif isinstance(text_language, List):
-                text_language_id = torch.LongTensor(np.array([self.language_ID[tl] for tl in text_language])).to(
-                    x.device)
-            x[:, :x_lens, :] += self.ar_language_embedding(prompt_language_id)
-            x[:, x_lens:, :] += self.ar_language_embedding(text_language_id)
-
+            # Add language embedding language IDs is passed
+            if kwargs.__contains__('languages'):
+                language_ids = kwargs.get('languages')
+                language_embed = self.ar_language_embedding(language_ids)
+                language_embed = language_embed.unsqueeze(1)
+                x += language_embed
             x = self.ar_text_prenet(x)
             x = self.ar_text_position(x)
 
@@ -889,25 +905,22 @@ class VALLE(VALLF):
             )[0]
 
             x = self.nar_text_embedding(text)
-            # Add language embedding
-            prompt_language_id = torch.LongTensor(np.array([self.language_ID[prompt_language]])).to(x.device)
-            if isinstance(text_language, str):
-                text_language_id = torch.LongTensor(np.array([self.language_ID[text_language]])).to(x.device)
-            elif isinstance(text_language, List):
-                text_language_id = torch.LongTensor(np.array([self.language_ID[tl] for tl in text_language])).to(
-                    x.device)
-            x[:, :x_lens, :] += self.nar_text_embedding(prompt_language_id)
-            x[:, x_lens:, :] += self.nar_text_embedding(text_language_id)
+            # Add language embedding language IDs is passed
+            if kwargs.__contains__('languages'):
+                language_ids = kwargs.get('languages')
+                language_embed = self.nar_language_embedding(language_ids)
+                language_embed = language_embed.unsqueeze(1)
+                x += language_embed
             x = self.nar_text_prenet(x)
             x = self.nar_text_position(x)
 
             y_emb, prefix_len = self._prepare_prompts(
-                y, y_lens, codes, nar_stage, y_prompts_codes
+                y, y_lens, codes, nar_stage, y_prompts_codes, prefix_mode
             )
 
             y_len = y_lens.max()
             targets = codes[..., nar_stage] + NUM_AUDIO_TOKENS * y_mask_int
-            if self.prefix_mode in [2, 4]:
+            if prefix_mode in [2, 4]:
                 xy_padding_mask = torch.concat(
                     [
                         x_mask,
@@ -915,7 +928,7 @@ class VALLE(VALLF):
                     ],
                     dim=1,
                 )
-            elif self.prefix_mode == 1:
+            elif prefix_mode == 1:
                 targets = targets[:, prefix_len:]
 
             y_pos = self.nar_audio_prenet(y_emb)
@@ -926,8 +939,8 @@ class VALLE(VALLF):
                 src_key_padding_mask=xy_padding_mask,
                 # is_causal=False,
             )
-            xy_dec = xy_dec[:, x_lens.max() + prefix_len:]
-            if self.prefix_mode == 4:
+            xy_dec = xy_dec[:, x_lens.max() + prefix_len :]
+            if prefix_mode == 4:
                 prefix_len = 0  # reset for Top10Accuracy metric
             logits = self.nar_predict_layers[nar_stage - 1](xy_dec).permute(
                 0, 2, 1
@@ -936,24 +949,24 @@ class VALLE(VALLF):
             # loss
             total_length = (y_lens).sum().type(torch.float32)
             total_loss += (
-                    F.cross_entropy(
-                        logits,
-                        targets,
-                        ignore_index=NUM_AUDIO_TOKENS,
-                        reduction=reduction,
-                    )
-                    * (total_length / (total_length - prefix_len * x.shape[0]))
+                F.cross_entropy(
+                    logits,
+                    targets,
+                    ignore_index=NUM_AUDIO_TOKENS,
+                    reduction=reduction,
+                )
+                * (total_length / (total_length - prefix_len * x.shape[0]))
             )
             metrics["NarTop10Accuracy"] = (
-                    self.nar_accuracy_metric(
-                        F.pad(
-                            logits.detach(),
-                            (0, 0, 0, 1, 0, 0),
-                            value=logits.min().cpu().item(),
-                        ),
-                        targets,
-                    ).item()
-                    * total_length
+                self.nar_accuracy_metric(
+                    F.pad(
+                        logits.detach(),
+                        (0, 0, 0, 1, 0, 0),
+                        value=logits.min().cpu().item(),
+                    ),
+                    targets,
+                ).item()
+                * total_length
             )
 
         if train_stage == 0:
@@ -962,18 +975,15 @@ class VALLE(VALLF):
         return ((x, codes), total_loss, metrics)
 
     def inference(
-            self,
-            x: torch.Tensor,
-            x_lens: torch.Tensor,
-            y: torch.Tensor,
-            enroll_x_lens: torch.Tensor,
-            top_k: int = -100,
-            temperature: float = 1.0,
-            prompt_language: str = None,
-            text_language: str = None,
-            best_of: int = 1,
-            length_penalty: float = 1.0,
-            return_worst: bool = False,
+        self,
+        x: torch.Tensor,
+        x_lens: torch.Tensor,
+        y: torch.Tensor,
+        enroll_x_lens: torch.Tensor,
+        top_k: int = -100,
+        temperature: float = 1.0,
+        prompt_language: str = None,
+        text_language: str = None,
     ) -> torch.Tensor:
         """
         Args:
@@ -1003,10 +1013,7 @@ class VALLE(VALLF):
         x = self.ar_text_embedding(text)
         # Add language embedding
         prompt_language_id = torch.LongTensor(np.array([self.language_ID[prompt_language]])).to(x.device)
-        if isinstance(text_language, str):
-            text_language_id = torch.LongTensor(np.array([self.language_ID[text_language]])).to(x.device)
-        elif isinstance(text_language, List):
-            text_language_id = torch.LongTensor(np.array([self.language_ID[tl] for tl in text_language])).to(x.device)
+        text_language_id = torch.LongTensor(np.array([self.language_ID[text_language]])).to(x.device)
         x[:, :enroll_x_lens, :] += self.ar_language_embedding(prompt_language_id)
         x[:, enroll_x_lens:, :] += self.ar_language_embedding(text_language_id)
         x = self.ar_text_prenet(x)
@@ -1027,10 +1034,6 @@ class VALLE(VALLF):
 
         kv_cache = None
         use_kv_caching = True
-
-        sum_logprobs = torch.zeros(best_of, device=y.device)  # implement batch decoding here
-        x = x.repeat(best_of, 1, 1)
-        y = y.repeat(best_of, 1)
         while True:
             y_emb = self.ar_audio_embedding(y)
             y_emb = self.ar_audio_prenet(y_emb)
@@ -1054,6 +1057,7 @@ class VALLE(VALLF):
                 [x_attn_mask_pad, y_attn_mask], dim=0
             ).to(y.device)
 
+
             if use_kv_caching and kv_cache is not None:
                 xy_pos = xy_pos[:, [-1]]
             else:
@@ -1071,44 +1075,32 @@ class VALLE(VALLF):
             # )
 
             logits = self.ar_predict_layer(xy_dec[:, -1])
-            samples, current_logprobs = topk_sampling(
+            samples = topk_sampling(
                 logits, top_k=top_k, top_p=1, temperature=temperature
             )
-            sum_logprobs += current_logprobs * (y[:, -1] != NUM_AUDIO_TOKENS)
-            samples[y[:, -1] == NUM_AUDIO_TOKENS] = NUM_AUDIO_TOKENS
-            completed = (samples[:, -1] == NUM_AUDIO_TOKENS).all()
+
             if (
-                    completed
-                    or (y.shape[1] - prompts.shape[1]) > x_lens.max() * 16
+                torch.argmax(logits, dim=-1)[0] == NUM_AUDIO_TOKENS
+                or samples[0, 0] == NUM_AUDIO_TOKENS
+                or (y.shape[1] - prompts.shape[1]) > x_lens.max() * 16
             ):
                 if prompts.shape[1] == y.shape[1]:
                     raise SyntaxError(
                         "well trained model shouldn't reach here."
                     )
-                lengths = torch.sum(y != NUM_AUDIO_TOKENS, dim=1)
-                avg_logprobs = sum_logprobs / lengths ** length_penalty
-                # choose the best beam according to sum_logprobs
-                best_beam = y[torch.argmax(avg_logprobs), :]
-                worst_beam = y[torch.argmin(avg_logprobs), :]
-                # strip all eos tokens
-                best_beam = best_beam[best_beam != NUM_AUDIO_TOKENS]
-                worst_beam = worst_beam[worst_beam != NUM_AUDIO_TOKENS]
-                if return_worst:
-                    y = worst_beam.unsqueeze(0)
-                else:
-                    y = best_beam.unsqueeze(0)
+
                 print(f"VALL-E EOS [{prompts.shape[1]} -> {y.shape[1]}]")
                 break
 
             y = torch.concat([y, samples], dim=1)
 
-        codes = [y[:, prefix_len + int(self.ar_audio_prepend_bos):]]
+        codes = [y[:, prefix_len + int(self.ar_audio_prepend_bos) :]]
         if self.num_quantizers == 1:
             return torch.stack(codes, dim=-1)
 
         # Non-AR Decoders
         y_emb = self.nar_audio_embeddings[0](
-            y[:, int(self.ar_audio_prepend_bos):]
+            y[:, int(self.ar_audio_prepend_bos) :]
         )
 
         if self.prefix_mode in [2, 4]:  # Exclude enrolled_phonemes
@@ -1117,7 +1109,7 @@ class VALLE(VALLF):
             text = torch.concat(
                 [
                     text[:, :1],
-                    text[:, enrolled_len - 1:],
+                    text[:, enrolled_len - 1 :],
                 ],
                 dim=1,
             )
@@ -1127,10 +1119,7 @@ class VALLE(VALLF):
         x = self.nar_text_embedding(text)
         # Add language embedding
         prompt_language_id = torch.LongTensor(np.array([self.language_ID[prompt_language]])).to(x.device)
-        if isinstance(text_language, str):
-            text_language_id = torch.LongTensor(np.array([self.language_ID[text_language]])).to(x.device)
-        elif isinstance(text_language, List):
-            text_language_id = torch.LongTensor(np.array([self.language_ID[tl] for tl in text_language])).to(x.device)
+        text_language_id = torch.LongTensor(np.array([self.language_ID[text_language]])).to(x.device)
         x[:, :enroll_x_lens, :] += self.nar_language_embedding(prompt_language_id)
         x[:, enroll_x_lens:, :] += self.nar_language_embedding(text_language_id)
         x = self.nar_text_prenet(x)
@@ -1138,10 +1127,10 @@ class VALLE(VALLF):
 
         if self.prefix_mode == 0:
             for i, (predict_layer, embedding_layer) in enumerate(
-                    zip(
-                        self.nar_predict_layers,
-                        self.nar_audio_embeddings[1:],
-                    )
+                zip(
+                    self.nar_predict_layers,
+                    self.nar_audio_embeddings[1:],
+                )
             ):
                 y_pos = self.nar_audio_prenet(y_emb)
                 y_pos = self.nar_audio_position(y_pos)
@@ -1150,7 +1139,7 @@ class VALLE(VALLF):
                 xy_dec, _ = self.nar_decoder(
                     (xy_pos, self.nar_stage_embeddings[i].weight)
                 )
-                logits = predict_layer(xy_dec[:, text_len + prefix_len:])
+                logits = predict_layer(xy_dec[:, text_len + prefix_len :])
 
                 samples = torch.argmax(logits, dim=-1)
                 codes.append(samples)
@@ -1167,10 +1156,10 @@ class VALLE(VALLF):
                 )
 
             for i, (predict_layer, embedding_layer) in enumerate(
-                    zip(
-                        self.nar_predict_layers,
-                        self.nar_audio_embeddings[1:],
-                    )
+                zip(
+                    self.nar_predict_layers,
+                    self.nar_audio_embeddings[1:],
+                )
             ):
                 y_pos = self.nar_audio_prenet(y_emb)
                 y_pos = self.nar_audio_position(y_pos)
@@ -1179,7 +1168,7 @@ class VALLE(VALLF):
                 xy_dec, _ = self.nar_decoder(
                     (xy_pos, self.nar_stage_embeddings[i].weight)
                 )
-                logits = predict_layer(xy_dec[:, text_len + prefix_len:])
+                logits = predict_layer(xy_dec[:, text_len + prefix_len :])
 
                 samples = torch.argmax(logits, dim=-1)
                 codes.append(samples)
@@ -1191,10 +1180,10 @@ class VALLE(VALLF):
         return torch.stack(codes, dim=-1)
 
     def continual(
-            self,
-            x: torch.Tensor,
-            x_lens: torch.Tensor,
-            y: torch.Tensor,
+        self,
+        x: torch.Tensor,
+        x_lens: torch.Tensor,
+        y: torch.Tensor,
     ) -> torch.Tensor:
         """
         Args:
@@ -1239,10 +1228,10 @@ class VALLE(VALLF):
 
         if self.prefix_mode == 0:
             for i, (predict_layer, embedding_layer) in enumerate(
-                    zip(
-                        self.nar_predict_layers,
-                        self.nar_audio_embeddings[1:],
-                    )
+                zip(
+                    self.nar_predict_layers,
+                    self.nar_audio_embeddings[1:],
+                )
             ):
                 y_pos = self.nar_audio_position(y_emb)
                 y_pos = self.nar_audio_prenet(y_pos)
@@ -1251,7 +1240,7 @@ class VALLE(VALLF):
                 xy_dec, _ = self.nar_decoder(
                     (xy_pos, self.nar_stage_embeddings[i].weight)
                 )
-                logits = predict_layer(xy_dec[:, text_len + prefix_len:])
+                logits = predict_layer(xy_dec[:, text_len + prefix_len :])
 
                 samples = torch.argmax(logits, dim=-1)
                 codes.append(samples)
@@ -1268,10 +1257,10 @@ class VALLE(VALLF):
                 )
 
             for i, (predict_layer, embedding_layer) in enumerate(
-                    zip(
-                        self.nar_predict_layers,
-                        self.nar_audio_embeddings[1:],
-                    )
+                zip(
+                    self.nar_predict_layers,
+                    self.nar_audio_embeddings[1:],
+                )
             ):
                 y_pos = self.nar_audio_prenet(y_emb)
                 y_pos = self.nar_audio_position(y_pos)
@@ -1280,7 +1269,7 @@ class VALLE(VALLF):
                 xy_dec, _ = self.nar_decoder(
                     (xy_pos, self.nar_stage_embeddings[i].weight)
                 )
-                logits = predict_layer(xy_dec[:, text_len + prefix_len:])
+                logits = predict_layer(xy_dec[:, text_len + prefix_len :])
 
                 samples = torch.argmax(logits, dim=-1)
                 codes.append(samples)
@@ -1294,7 +1283,7 @@ class VALLE(VALLF):
 
 # https://github.com/microsoft/unilm/blob/master/xtune/src/transformers/modeling_utils.py
 def top_k_top_p_filtering(
-        logits, top_k=0, top_p=1.0, filter_value=-float("Inf"), min_tokens_to_keep=1
+    logits, top_k=0, top_p=1.0, filter_value=-float("Inf"), min_tokens_to_keep=1
 ):
     """Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
     Args:
@@ -1326,8 +1315,8 @@ def top_k_top_p_filtering(
             sorted_indices_to_remove[..., :min_tokens_to_keep] = 0
         # Shift the indices to the right to keep also the first token above the threshold
         sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[
-                                            ..., :-1
-                                            ].clone()
+            ..., :-1
+        ].clone()
         sorted_indices_to_remove[..., 0] = 0
 
         # scatter sorted tensors to original indexing
@@ -1353,6 +1342,4 @@ def topk_sampling(logits, top_k=10, top_p=1.0, temperature=1.0):
     logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
     # Sample
     token = torch.multinomial(F.softmax(logits, dim=-1), num_samples=1)
-    logprobs = F.log_softmax(logits.float(), dim=-1)
-    current_logprobs = logprobs[torch.arange(logprobs.shape[0]), token.squeeze(1)]
-    return token, current_logprobs
+    return token

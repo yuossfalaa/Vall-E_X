@@ -16,7 +16,7 @@
 - [x] Training a Model For Arabic G2P
 - [x] Making a Tokenizer For MGB2
 - [x] Testing All Training Stages
-- [ ] **Fixing Forward Method In Vall-E X**
+- [x] **Fixing Forward Method In Vall-E X**
 - [ ] Uploading The Dataset To the Cloud
 - [ ] Traing The Model
 

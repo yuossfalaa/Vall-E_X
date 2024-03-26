@@ -37,7 +37,12 @@ from modules.scheduler import get_scheduler
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 LRSchedulerType = torch.optim.lr_scheduler._LRScheduler
-
+language_ID = {
+            'en': 0,
+            'zh': 1,
+            'ja': 2,
+            'ar': 3
+        }
 
 def set_batch_count(model: Union[nn.Module, DDP], batch_count: float) -> None:
     if isinstance(model, DDP):
@@ -488,6 +493,8 @@ def compute_loss(
     audio_features = batch["audio_features"].to(device)
     audio_features_lens = batch["audio_features_lens"].to(device)
     text_language = batch["text_language"]
+    language_id = language_ID.get(text_language, -1)
+    language_ids = torch.full((text_tokens.size(0),), language_id).to(device)
     assert audio_features.ndim == 3
 
     with torch.set_grad_enabled(is_training):
@@ -496,9 +503,8 @@ def compute_loss(
             x_lens=text_tokens_lens,
             y=audio_features,
             y_lens=audio_features_lens,
-            prompt_language=text_language,
-            text_language=text_language,
             train_stage=params.train_stage,
+            languages=language_ids,
         )
 
     assert loss.requires_grad == is_training
@@ -634,6 +640,7 @@ def train_one_epoch(
                     batch=batch,
                     is_training=True,
                 )
+            assert not torch.isnan(loss)
             # summary stats
             tot_loss = (
                                tot_loss * (1 - 1 / params.reset_interval)

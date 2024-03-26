@@ -18,8 +18,9 @@ from typing import Any, Dict, List, Tuple, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-# from icefall.utils import make_pad_mask
-# from torchmetrics.classification import BinaryAccuracy
+
+from utils.icefall_utils import make_pad_mask
+from torchmetrics.classification import BinaryAccuracy
 
 from models.vallex import Transpose
 from modules.embedding import SinePositionalEmbedding, TokenEmbedding
@@ -31,11 +32,9 @@ from modules.transformer import (
     TransformerEncoder,
     TransformerEncoderLayer,
 )
-from utils.icefall_utils import make_pad_mask
 
 from .macros import NUM_MEL_BINS, NUM_TEXT_TOKENS
 from .visualizer import visualize
-from torchmetrics.classification import BinaryAccuracy
 
 IdentityNorm = IdentityNorm
 
