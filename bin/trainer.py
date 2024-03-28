@@ -1137,4 +1137,5 @@ torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
 
 if __name__ == "__main__":
+    warnings.filterwarnings("ignore")
     main()
