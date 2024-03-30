@@ -11,13 +11,13 @@ if __name__ == "__main__":
     dataset_parts = ["dev", "train", "test"]
     try:
         # Results :
-        # manifests/mgb2_recordings_dev.jsonl.gz
-        # manifests/mgb2_recordings_train.jsonl.gz
-        # manifests/mgb2_recordings_test.jsonl.gz
-        # manifests/mgb2_supervisions_dev.jsonl.gz
-        # manifests/mgb2_supervisions_train.jsonl.gz
-        # manifests/mgb2_supervisions_test.jsonl.gz
-        mgb2.prepare_mgb2(corpus_dir="Dataset/mgb2", output_dir="manifests", buck_walter=False, text_cleaning=False)
+        # manifests/mgb2/mgb2_recordings_dev.jsonl.gz
+        # manifests/mgb2/mgb2_recordings_train.jsonl.gz
+        # manifests/mgb2/mgb2_recordings_test.jsonl.gz
+        # manifests/mgb2/mgb2_supervisions_dev.jsonl.gz
+        # manifests/mgb2/mgb2_supervisions_train.jsonl.gz
+        # manifests/mgb2/mgb2_supervisions_test.jsonl.gz
+        mgb2.prepare_mgb2(corpus_dir="Dataset/mgb2", output_dir="manifests/mgb2", buck_walter=False, text_cleaning=False)
 
         # Results :
         # manifests/output/mgb2_cuts_dev.jsonl.gz
@@ -26,8 +26,8 @@ if __name__ == "__main__":
         # manifests/output/mgb2__encodec_dev.h5
         # manifests/output/mgb2__encodec_train.h5
         # manifests/output/mgb2__encodec_test.h5
-        Tokenize(src_dir="manifests", output_dir="manifests/output", prefix="mgb2", dataset_parts=dataset_parts,
-                 language='ar')
+        Tokenize(src_dir="manifests/mgb2", output_dir="manifests/output", prefix="mgb2", dataset_parts=dataset_parts,
+                 language='ar', trim_to_supervisions=True)
 
         # Results :
         # manifests/output/cuts_dev.jsonl.gz
