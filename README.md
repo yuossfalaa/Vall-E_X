@@ -17,7 +17,7 @@
 - [x] Making a Tokenizer For MGB2
 - [x] Testing All Training Stages
 - [x] **Fixing Forward Method In Vall-E X**
-- [ ] Making a seperate classes to tokenize popular datasets to train on them later
+- [x] Making a seperate classes to tokenize popular datasets to train on them later
 - [ ] Uploading The Dataset To the Cloud
 - [ ] Traing The Model
 

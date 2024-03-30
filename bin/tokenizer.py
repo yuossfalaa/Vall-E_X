@@ -25,7 +25,7 @@ torch.multiprocessing.set_sharing_strategy("file_system")
 
 
 def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz", batch_duration=40.0,
-             language='ar'):
+             language='ar', trim_to_supervisions=False):
     assert len(dataset_parts) >= 1
 
     manifests = read_manifests_if_cached(
@@ -60,7 +60,8 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
         )
         cut_set = cut_set.resample(24000)
         try:
-            cut_set = cut_set.trim_to_supervisions(keep_overlapping=False)
+            if trim_to_supervisions:
+                cut_set = cut_set.trim_to_supervisions(keep_overlapping=False)
         except Exception:
             logging.info(f"trim_to_supervisions Failed {Exception}")
 
@@ -89,4 +90,3 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
                 c.supervisions[0].custom["lang"] = lang[0]
             cuts_filename = f"{prefix}cuts_{partition}.{suffix}"
             cut_set.to_file(f"{output_dir}/{cuts_filename}")
-
