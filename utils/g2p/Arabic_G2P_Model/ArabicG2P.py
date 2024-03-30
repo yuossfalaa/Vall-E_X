@@ -29,7 +29,7 @@ class ArabicG2P:
                 Phoneme_results.append(self.SearchSpace[word])
             else:
                 Phoneme_results.append(self.phonemizer(word, lang='ar'))
-        return self._customize_text(' '.join(Phoneme_results), self.separator.word, self.separator.phone)
+        return ' '.join(Phoneme_results)
 
     def _customize_text(self,text, word_separator, letter_separator):
         # Split the text into words
