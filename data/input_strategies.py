@@ -125,12 +125,12 @@ class PromptedPrecomputedFeatures(PrecomputedFeatures):
 
                 for utt in utt2postutt:
                     postutt = utt2postutt[utt]
-                    if utt[:5] == postutt[:5]:
+                    if utt[:8] == postutt[:8]:
                         self.utt2neighbors[utt].append(utt2cut[postutt])
 
                 for utt in utt2prevutt:
                     prevutt = utt2prevutt[utt]
-                    if utt[:5] == prevutt[:5] or not self.utt2neighbors[utt]:
+                    if utt[:8] == prevutt[:8] or not self.utt2neighbors[utt]:
                         self.utt2neighbors[utt].append(utt2cut[prevutt])
         else:
             raise ValueError
