@@ -13,11 +13,9 @@ from tqdm import tqdm
 recordings = RecordingSet()
 
 
-def generate_mgb2(download_path, output_dir="manifests/mgb2"):
+def generate_mgb2(download_path="DataSet/mgb2_speech", output_dir="manifests/mgb2"):
     _organize_downloaded_data(download_path)
     _create_manifest(output_dir, download_path)
-
-
 
 
 def _create_manifest(output_dir, download_path):
@@ -51,7 +49,7 @@ def _create_manifest(output_dir, download_path):
             print(f"MGB2 subset: {part} already prepared - skipping.")
             continue
         output_dir = Path(output_dir)
-        (output_dir / part).mkdir(parents=True, exist_ok=True)
+
         # Make Recording
         wav_path = Path(f"{corpus_dir}/{part}/wav")
         recordings = RecordingSet.from_dir(wav_path, pattern='*.wav', num_jobs=job_num)
@@ -112,7 +110,7 @@ def _organize_downloaded_data(download_path):
     }
 
     # Create directories for the merged dataset
-    merged_dataset_path = download_path + "dataset/"
+    merged_dataset_path = download_path + "/dataset/"
     os.makedirs(merged_dataset_path, exist_ok=True)
 
     for data_type, tar_file_paths in _DATA_URL.items():
