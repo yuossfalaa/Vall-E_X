@@ -78,7 +78,7 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
         # TextTokenizer
         print("Start Text Tokenizing")
         cut_set = cut_set
-        text_tokenizer = PhonemeBpeTokenizer()
+        text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
         lang_token = lang2token[language]
         for c in tqdm(cut_set):
             if c.supervisions[0].custom is None:
