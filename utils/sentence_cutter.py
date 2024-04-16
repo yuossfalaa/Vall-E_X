@@ -53,12 +53,9 @@ long_text = "وقت الشرطة المكان، عقب انتهاء الوقت �
             "ويقولون إنه ليس أمامهم مكان آخر ليذهبوا إليه، بعد تدمير المخيمات. وكانت عدة حافلات تقل عشرات من أفراد " \
             "الشرطة قد وصلت صباح الأربعاء إلى المخيمات. وتشارك الشرطة الآن في المواجهة مع النشطاء هناك، بحسب ما ذكره " \
             "مراسل بي بي سي، بول آدمز، الموجود في المكان."
-print(split_text_into_sentences(long_text))
-
 long_text = """
 This is a very long paragraph, so most TTS model is unable to handle it. Hence, we have to split it into several sentences. With the help of NLTK, we can split it into sentences. However, the punctuation is not preserved, so we have to add it back. How are we going to do write this code? Let's see. 
 """
-print(split_text_into_sentences(long_text))
 long_text = """
 现在我们要来尝试一下中文分句。因为很不幸的是，NLTK不支持中文分句。幸运的是，我们可以使用jieba来分句。但是，jieba分句后，标点符号会丢失，所以我们要手动添加回去。我现在正在想办法把这个例句写的更长更复杂一点，来测试jieba分句的性能。嗯......省略号，感觉不太好，因为省略号不是句号，所以jieba不会把它当作句子的结尾。会这样吗？我们来试试看。
 """
