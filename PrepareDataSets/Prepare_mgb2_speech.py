@@ -1,7 +1,7 @@
 import os
 
-from Copy import copy
-from PrepareDataSets import Generate_mgb2_from_custom_data as mgb2
+from .Copy import copy
+from .Generate_mgb2_from_custom_data import generate_mgb2
 
 
 from bin.tokenizer import Tokenize
@@ -18,7 +18,7 @@ if __name__ == "__main__":
         # manifests/mgb2/mgb2_supervisions_dev.jsonl.gz
         # manifests/mgb2/mgb2_supervisions_train.jsonl.gz
         # manifests/mgb2/mgb2_supervisions_test.jsonl.gz
-        mgb2.generate_mgb2()
+        generate_mgb2()
 
         # Results :
         # manifests/output/mgb2_cuts_dev.jsonl.gz
