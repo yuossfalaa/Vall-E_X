@@ -1,0 +1,7 @@
+torch==2.1.0+cu121
+torch==2.0.1
+torchaudio==2.1.0+cu121
+torchaudio==2.1.2+cu118
+k2==1.24.4.dev20231123+cuda12.1.torch2.1.0
+numpy==1.24.1
+matplotlib==3.8.2

@@ -38,5 +38,5 @@ if __name__ == "__main__":
         copy("manifests/output/mgb2_cuts_dev.jsonl.gz", "manifests/output/cuts_dev.jsonl.gz")
         copy("manifests/output/mgb2_cuts_train.jsonl.gz", "manifests/output/cuts_train.jsonl.gz")
         copy("manifests/output/mgb2_cuts_test.jsonl.gz", "manifests/output/cuts_test.jsonl.gz")
-    except Exception:
-        print(Exception)
+    except Exception as e:
+        print(f"An error occurred while generating MGB2: {e}")

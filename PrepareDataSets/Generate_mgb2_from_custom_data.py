@@ -65,6 +65,14 @@ def _create_manifest(output_dir, download_path):
                     desc="Scanning Text files (*.txt): ",
                 )
             )
+
+        All_Count = len(supervisions_list)
+        res = [i for i in supervisions_list if i is not None]
+        supervisions_list = res
+        Non_Count = len(supervisions_list)
+        print(f"Found {Non_Count} from all {All_Count}")
+
+
         supervisions = SupervisionSet.from_segments(supervisions_list)
         recordings, supervisions = fix_manifests(recordings, supervisions)
         validate_recordings_and_supervisions(recordings, supervisions)
@@ -84,15 +92,20 @@ def process(file_path):
     global recordings
     if file_path.is_file() and file_path.suffix == ".txt":
         file_name = file_path.stem
-        record_id = file_name[:-5]
-        with open(file_path, "r", encoding="utf-8") as file:
-            text = file.read().strip()
+        if  len(file_name) >= 5 and file_name[-5:] == "_utf8":
+            record_id = file_name[:-5]
+        else :
+            record_id = file_name
         try:
+            duration = recordings[record_id].duration
+            with open(file_path, "r", encoding="utf-8") as file:
+                text = file.read().strip()
+
             return SupervisionSegment(id=record_id, recording_id=record_id, start=0,
-                                      duration=recordings[record_id].duration, channel=0,
+                                      duration=duration, channel=0,
                                       text=text)
         except:
-            print(f"record id {record_id} not found")
+            #print(f"record id {record_id} not found")
             return None
 
 
