@@ -15,7 +15,6 @@ num2words==0.5.13
 phonemizer==3.2.1
 pyopenjtalk_prebuilt==0.3.0
 pypinyin==0.50.0
-pypinyin==0.48.0
 scipy==1.13.0
 SudachiPy==0.6.8
 tokenizers==0.15.2
