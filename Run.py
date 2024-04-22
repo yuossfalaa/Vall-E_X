@@ -1,25 +1,14 @@
-from lhotse import SupervisionSet, CutSet
+from lhotse import CutSet
 from lhotse.recipes.utils import read_manifests_if_cached
+from macros import lang2token
 
-from PrepareDataSets.Generate_mgb2_from_custom_data import generate_mgb2
+from utils.g2p import PhonemeBpeTokenizer
 
 if __name__ == '__main__':
-    dataset_parts = ["dev", "train", "test"]
-    src_dir = "manifests/mgb2"
-    output_dir = "manifests/output"
-    prefix = "mgb2"
-    suffix = "jsonl.gz"
-    manifests = read_manifests_if_cached(
-        dataset_parts=dataset_parts,
-        output_dir=src_dir,
-        prefix=prefix,
-        suffix=suffix,
-        types=["recordings", "supervisions", "cuts"],
-    )
-    for partition, m in manifests.items():
-        cut_set = CutSet.from_manifests(
-            recordings=m["recordings"],
-            supervisions=m["supervisions"],
-        )
-        print(cut_set.describe())
+    text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
+    lang_token = lang2token['ar']
+    text="0"
+    phoneme_tokens, lang = text_tokenizer.tokenize(
+        f"_{lang_token +  text + lang_token}".strip())
 
+    print(phoneme_tokens)

@@ -1,7 +1,10 @@
 # This file adds the ability to embed a 4th language to the pretrained model
 
 import torch
+import pathlib
 
+#if linux
+#pathlib.WindowsPath = pathlib.PosixPath
 device = torch.device("cpu")
 checkpoint = torch.load('checkpoints/vallex-checkpoint.pt')
 

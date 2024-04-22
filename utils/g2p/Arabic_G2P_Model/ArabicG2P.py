@@ -16,7 +16,18 @@ def load_data(json_path):
 
 
 class ArabicG2P:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.__initialized = False
+        return cls._instance
+
     def __init__(self):
+        if self.__initialized:
+            return
+        self.__initialized = True
         self.phonemizer = Phonemizer.from_checkpoint("./utils/g2p/Arabic_G2P_Model/checkpoints/best_model.pt")
         self.SearchSpace = load_data(SEARCH_SPACE_PATH)
         self.separator = Separator(word="_", syllable="-", phone="|")
@@ -28,10 +39,13 @@ class ArabicG2P:
             if word in self.SearchSpace:
                 Phoneme_results.append(self.SearchSpace[word])
             else:
-                Phoneme_results.append(self.phonemizer(word, lang='ar'))
+                a = self.phonemizer(word, lang='ar')
+                self.SearchSpace[word] = ' '.join(a)
+                Phoneme_results.append(a)
+
         return ' '.join(Phoneme_results)
 
-    def _customize_text(self,text, word_separator, letter_separator):
+    def _customize_text(self, text, word_separator, letter_separator):
         # Split the text into words
         words = text.split()
 

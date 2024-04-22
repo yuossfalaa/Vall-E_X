@@ -24,7 +24,7 @@ torch.set_num_interop_threads(1)
 torch.multiprocessing.set_sharing_strategy("file_system")
 
 
-def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz", batch_duration=40.0,
+def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz", batch_duration=400.0,
              language='ar', trim_to_supervisions=False):
     assert len(dataset_parts) >= 1
 
@@ -43,6 +43,7 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
     if prefix and not prefix.endswith("_"):
         prefix = f"{prefix}_"
 
+    text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
     for partition, m in manifests.items():
         logging.info(
             f"Processing partition: {partition} CUDA: {torch.cuda.is_available()}"
@@ -78,15 +79,17 @@ def Tokenize(src_dir, output_dir, prefix, dataset_parts: list, suffix="jsonl.gz"
         # TextTokenizer
         print("Start Text Tokenizing")
         cut_set = cut_set
-        text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
         lang_token = lang2token[language]
         for c in tqdm(cut_set):
             if c.supervisions[0].custom is None:
                 c.supervisions[0].custom = {}
+            if len(c.supervisions[0].text) == 0:
+                print("Empty Text Found")
+                c.supervisions[0].text = "0"
             phoneme_tokens, lang = text_tokenizer.tokenize(
                 f"_{lang_token + c.supervisions[0].text + lang_token}".strip())
             c.supervisions[0].custom["tokens"] = {"text": phoneme_tokens}
             if lang:
                 c.supervisions[0].custom["lang"] = lang[0]
-            cuts_filename = f"{prefix}cuts_{partition}.{suffix}"
-            cut_set.to_file(f"{output_dir}/{cuts_filename}")
+        cuts_filename = f"{prefix}cuts_{partition}.{suffix}"
+        cut_set.to_file(f"{output_dir}/{cuts_filename}")
