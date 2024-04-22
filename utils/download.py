@@ -43,5 +43,5 @@ def Download_AR_G2P_Checkpoint():
 
 
 if __name__ == '__main__':
-    #Download_Checkpoint()
+    Download_Checkpoint()
     Download_AR_G2P_Checkpoint()
