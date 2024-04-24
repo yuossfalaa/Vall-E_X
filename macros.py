@@ -39,6 +39,6 @@ langdropdown2token = {
     'English': "[EN]",
     '中文': "[ZH]",
     '日本語': "[JA]",
-    'عربى': "[AR]",
+    'عربي': "[AR]",
     'Mix': "",
 }

@@ -533,9 +533,9 @@ def main():
                                           placeholder="Type your sentence here",
                                           value="Welcome back, Master. What can I do for you today?",
                                           elem_id=f"tts-input")
-                    language_dropdown = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語'],
+                    language_dropdown = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語','عربي'],
                                                     value='auto-detect', label='language')
-                    accent_dropdown = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語'], value='no-accent',
+                    accent_dropdown = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語','عربي'], value='no-accent',
                                                   label='accent')
                     textbox_transcript = gr.TextArea(label="Transcript",
                                                      placeholder="Write transcript here. (leave empty to use whisper)",
@@ -598,10 +598,10 @@ def main():
                                             placeholder="Type your sentence here",
                                             value="Welcome back, Master. What can I do for you today?",
                                             elem_id=f"tts-input")
-                    language_dropdown_3 = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語', 'Mix'],
+                    language_dropdown_3 = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語','عربي', 'Mix'],
                                                       value='auto-detect',
                                                       label='language')
-                    accent_dropdown_3 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語'],
+                    accent_dropdown_3 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語','عربي'],
                                                     value='no-accent',
                                                     label='accent')
                     preset_dropdown_3 = gr.Dropdown(choices=preset_list, value=None, label='Voice preset')
@@ -626,10 +626,10 @@ def main():
                     textbox_4 = gr.TextArea(label="Text",
                                             placeholder="Type your sentence here",
                                             value=long_text_example, elem_id=f"tts-input")
-                    language_dropdown_4 = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語'],
+                    language_dropdown_4 = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語','عربي'],
                                                       value='auto-detect',
                                                       label='language')
-                    accent_dropdown_4 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語'],
+                    accent_dropdown_4 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語','عربي'],
                                                     value='no-accent',
                                                     label='accent')
                     preset_dropdown_4 = gr.Dropdown(choices=preset_list, value=None, label='Voice preset')
