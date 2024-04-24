@@ -2,6 +2,7 @@ import argparse
 import copy
 import logging
 import os
+import pathlib
 import random
 import warnings
 from pathlib import Path
@@ -43,7 +44,7 @@ language_ID = {
             'ja': 2,
             'ar': 3
         }
-
+#pathlib.WindowsPath = pathlib.PosixPath
 def set_batch_count(model: Union[nn.Module, DDP], batch_count: float) -> None:
     if isinstance(model, DDP):
         # get underlying nn.Module
@@ -674,9 +675,10 @@ def train_one_epoch(
                             scheduler.step()
 
             set_batch_count(model, params.batch_idx_train)
-        except:  # noqa
+        except Exception as ex:  # noqa
             display_and_save_batch(batch, params=params)
-            raise
+            print(f"Exception: {ex}")
+            continue
 
         if params.average_period > 0:
             if (
@@ -956,7 +958,7 @@ def run(rank, world_size, args):
     scheduler = get_scheduler(params, optimizer)
     optimizer.zero_grad()
 
-    if checkpoints and "optimizer" in checkpoints:
+    if checkpoints and "optimizer" in checkpoints and checkpoints["optimizer"] is not None:
         logging.info("Loading optimizer state dict")
         optimizer.load_state_dict(checkpoints["optimizer"])
 
@@ -1120,6 +1122,7 @@ def scan_pessimistic_batches_for_oom(
 
 
 def main():
+
     parser = get_parser()
     TtsDataModule.add_arguments(parser)
     args = parser.parse_args()
