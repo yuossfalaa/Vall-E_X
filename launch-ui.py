@@ -65,11 +65,11 @@ torch._C._set_graph_executor_optimize(False)
 text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
 text_collater = get_text_token_collater(False)
 
-device = torch.device("cpu")
-if torch.cuda.is_available():
-    device = torch.device("cuda", 0)
-if torch.backends.mps.is_available():
-    device = torch.device("mps")
+#device = torch.device("cpu")
+#if torch.cuda.is_available():
+device = torch.device("cuda", 0)
+#if torch.backends.mps.is_available():
+#    device = torch.device("mps")
 # VALL-E-X model
 if not os.path.exists("./checkpoints/"): os.mkdir("./checkpoints/")
 if not os.path.exists(os.path.join("./checkpoints/", "vallex-checkpoint.pt")):
@@ -103,7 +103,7 @@ checkpoint = torch.load("./checkpoints/vallex-checkpoint.pt", map_location='cpu'
 missing_keys, unexpected_keys = model.load_state_dict(
     checkpoint["model"], strict=False
 )
-#assert not missing_keys
+assert not missing_keys
 model.eval()
 
 # Encodec model
@@ -644,7 +644,7 @@ def main():
                                 outputs=[text_output_4, audio_output_4])
 
     webbrowser.open("http://127.0.0.1:7860")
-    app.launch(share=True)
+    app.launch(share=True,)
 
 
 if __name__ == "__main__":
