@@ -27,13 +27,13 @@ class TextTokenCollater:
     """
 
     def __init__(
-        self,
-        text_tokens: List[str],
-        add_eos: bool = True,
-        add_bos: bool = True,
-        pad_symbol: str = "<pad>",
-        bos_symbol: str = "<bos>",
-        eos_symbol: str = "<eos>",
+            self,
+            text_tokens: List[str],
+            add_eos: bool = True,
+            add_bos: bool = True,
+            pad_symbol: str = "<pad>",
+            bos_symbol: str = "<bos>",
+            eos_symbol: str = "<eos>",
     ):
         self.pad_symbol = pad_symbol
 
@@ -44,28 +44,28 @@ class TextTokenCollater:
         self.eos_symbol = eos_symbol
 
         unique_tokens = (
-            [pad_symbol]
-            + ([bos_symbol] if add_bos else [])
-            + ([eos_symbol] if add_eos else [])
-            + sorted(text_tokens)
+                [pad_symbol]
+                + ([bos_symbol] if add_bos else [])
+                + ([eos_symbol] if add_eos else [])
+                + sorted(text_tokens)
         )
 
         self.token2idx = {token: idx for idx, token in enumerate(unique_tokens)}
         self.idx2token = [token for token in unique_tokens]
 
     def index(
-        self, tokens_list: List[str]
+            self, tokens_list: List[str]
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         seqs, seq_lens = [], []
         for tokens in tokens_list:
             assert (
-                all([True if s in self.token2idx else False for s in tokens])
-                is True
+                    all([True if s in self.token2idx else False for s in tokens])
+                    is True
             )
             seq = (
-                ([self.bos_symbol] if self.add_bos else [])
-                + list(tokens)
-                + ([self.eos_symbol] if self.add_eos else [])
+                    ([self.bos_symbol] if self.add_bos else [])
+                    + list(tokens)
+                    + ([self.eos_symbol] if self.add_eos else [])
             )
             seqs.append(seq)
             seq_lens.append(len(seq))
@@ -98,7 +98,7 @@ class TextTokenCollater:
               ]'''
         seqs = [
             ([self.token2idx[self.bos_symbol]] if self.add_bos else [])  # Tokenize <bos>
-            + list(seq) #the sequence
+            + list(seq)  # the sequence
             + ([self.token2idx[self.eos_symbol]] if self.add_eos else [])  # Tokenize <eos>
             + [self.token2idx[self.pad_symbol]] * (max_len - len(seq))  # Tokenize <pad>
             for seq in tokens_seqs
@@ -120,8 +120,9 @@ class TextTokenCollater:
         return tokens_batch, tokens_lens
 
 
-def get_text_token_collater() -> TextTokenCollater:
+# For Training Both Must Be Set To true
+def get_text_token_collater(add=True) -> TextTokenCollater:
     collater = TextTokenCollater(
-        ['0'], add_bos=True, add_eos=True
+        ['0'], add_bos=add, add_eos=add
     )
     return collater

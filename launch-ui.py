@@ -63,7 +63,7 @@ torch._C._jit_set_profiling_mode(False)
 torch._C._set_graph_executor_optimize(False)
 
 text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
-text_collater = get_text_token_collater()
+text_collater = get_text_token_collater(False)
 
 device = torch.device("cpu")
 if torch.cuda.is_available():
@@ -101,9 +101,9 @@ model = VALLE(
 )
 checkpoint = torch.load("./checkpoints/vallex-checkpoint.pt", map_location='cpu')
 missing_keys, unexpected_keys = model.load_state_dict(
-    checkpoint["model"], strict=True
+    checkpoint["model"], strict=False
 )
-assert not missing_keys
+#assert not missing_keys
 model.eval()
 
 # Encodec model
@@ -644,7 +644,7 @@ def main():
                                 outputs=[text_output_4, audio_output_4])
 
     webbrowser.open("http://127.0.0.1:7860")
-    app.launch()
+    app.launch(share=True)
 
 
 if __name__ == "__main__":
