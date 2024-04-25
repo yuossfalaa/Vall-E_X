@@ -101,7 +101,7 @@ model = VALLE(
 )
 checkpoint = torch.load("./checkpoints/vallex-checkpoint.pt", map_location='cpu')
 missing_keys, unexpected_keys = model.load_state_dict(
-    checkpoint["model"], strict=False
+    checkpoint["model"], strict=True
 )
 assert not missing_keys
 model.eval()
@@ -301,7 +301,7 @@ def infer_from_audio(text, language, accent, audio_prompt, record_audio_prompt, 
         temperature=1,
         prompt_language=lang_pr,
         text_language=langs if accent == "no-accent" else lang,
-        best_of=5,
+        best_of=1,
     )
     # Decode with Vocos
     frames = encoded_frames.permute(2, 0, 1)
@@ -309,7 +309,7 @@ def infer_from_audio(text, language, accent, audio_prompt, record_audio_prompt, 
     samples = vocos.decode(features, bandwidth_id=torch.tensor([2], device=device))
 
     # offload model
-    model.to('cpu')
+    #model.to('cpu')
     torch.cuda.empty_cache()
 
     message = f"text prompt: {text_pr}\nsythesized text: {text}"

@@ -76,7 +76,7 @@ def add_model_arguments(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--prepend-bos",
         type=bool,
-        default=False,
+        default=True,
         help="Whether prepend <BOS> to the acoustic tokens -> AR Decoder inputs.",
     )
     parser.add_argument(
