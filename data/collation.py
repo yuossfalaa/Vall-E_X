@@ -44,10 +44,11 @@ class TextTokenCollater:
         self.eos_symbol = eos_symbol
 
         unique_tokens = (
-                [pad_symbol]
-                + ([bos_symbol] if add_bos else [])
+                ([bos_symbol] if add_bos else [])
                 + ([eos_symbol] if add_eos else [])
-                + sorted(text_tokens)
+                + sorted(text_tokens)  # To make pad = 3 we called it with extra symbols 0,1,2
+                + [pad_symbol]
+
         )
 
         self.token2idx = {token: idx for idx, token in enumerate(unique_tokens)}
@@ -89,13 +90,6 @@ class TextTokenCollater:
 
         max_len = len(max(tokens_seqs, key=len))
 
-        '''seqs = [
-                  ([self.bos_symbol] if self.add_bos else [])
-                  + list(seq)
-                  + ([self.eos_symbol] if self.add_eos else [])
-                  + [self.pad_symbol] * (max_len - len(seq))
-                  for seq in tokens_seqs
-              ]'''
         seqs = [
             ([self.token2idx[self.bos_symbol]] if self.add_bos else [])  # Tokenize <bos>
             + list(seq)  # the sequence
@@ -120,9 +114,8 @@ class TextTokenCollater:
         return tokens_batch, tokens_lens
 
 
-# For Training Both Must Be Set To true
-def get_text_token_collater(add=True) -> TextTokenCollater:
+def get_text_token_collater() -> TextTokenCollater:
     collater = TextTokenCollater(
-        ['0'], add_bos=add, add_eos=add
+        ['0', '1', '2'], add_bos=False, add_eos=False
     )
     return collater

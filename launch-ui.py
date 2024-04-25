@@ -63,12 +63,12 @@ torch._C._jit_set_profiling_mode(False)
 torch._C._set_graph_executor_optimize(False)
 
 text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
-text_collater = get_text_token_collater(False)
+text_collater = get_text_token_collater()
 
-#device = torch.device("cpu")
-#if torch.cuda.is_available():
+# device = torch.device("cpu")
+# if torch.cuda.is_available():
 device = torch.device("cuda", 0)
-#if torch.backends.mps.is_available():
+# if torch.backends.mps.is_available():
 #    device = torch.device("mps")
 # VALL-E-X model
 if not os.path.exists("./checkpoints/"): os.mkdir("./checkpoints/")
@@ -309,7 +309,7 @@ def infer_from_audio(text, language, accent, audio_prompt, record_audio_prompt, 
     samples = vocos.decode(features, bandwidth_id=torch.tensor([2], device=device))
 
     # offload model
-    #model.to('cpu')
+    # model.to('cpu')
     torch.cuda.empty_cache()
 
     message = f"text prompt: {text_pr}\nsythesized text: {text}"
@@ -533,9 +533,10 @@ def main():
                                           placeholder="Type your sentence here",
                                           value="Welcome back, Master. What can I do for you today?",
                                           elem_id=f"tts-input")
-                    language_dropdown = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語','عربي'],
+                    language_dropdown = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語', 'عربي'],
                                                     value='auto-detect', label='language')
-                    accent_dropdown = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語','عربي'], value='no-accent',
+                    accent_dropdown = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語', 'عربي'],
+                                                  value='no-accent',
                                                   label='accent')
                     textbox_transcript = gr.TextArea(label="Transcript",
                                                      placeholder="Write transcript here. (leave empty to use whisper)",
@@ -598,10 +599,11 @@ def main():
                                             placeholder="Type your sentence here",
                                             value="Welcome back, Master. What can I do for you today?",
                                             elem_id=f"tts-input")
-                    language_dropdown_3 = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語','عربي', 'Mix'],
-                                                      value='auto-detect',
-                                                      label='language')
-                    accent_dropdown_3 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語','عربي'],
+                    language_dropdown_3 = gr.Dropdown(
+                        choices=['auto-detect', 'English', '中文', '日本語', 'عربي', 'Mix'],
+                        value='auto-detect',
+                        label='language')
+                    accent_dropdown_3 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語', 'عربي'],
                                                     value='no-accent',
                                                     label='accent')
                     preset_dropdown_3 = gr.Dropdown(choices=preset_list, value=None, label='Voice preset')
@@ -626,10 +628,10 @@ def main():
                     textbox_4 = gr.TextArea(label="Text",
                                             placeholder="Type your sentence here",
                                             value=long_text_example, elem_id=f"tts-input")
-                    language_dropdown_4 = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語','عربي'],
+                    language_dropdown_4 = gr.Dropdown(choices=['auto-detect', 'English', '中文', '日本語', 'عربي'],
                                                       value='auto-detect',
                                                       label='language')
-                    accent_dropdown_4 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語','عربي'],
+                    accent_dropdown_4 = gr.Dropdown(choices=['no-accent', 'English', '中文', '日本語', 'عربي'],
                                                     value='no-accent',
                                                     label='accent')
                     preset_dropdown_4 = gr.Dropdown(choices=preset_list, value=None, label='Voice preset')
@@ -644,7 +646,7 @@ def main():
                                 outputs=[text_output_4, audio_output_4])
 
     webbrowser.open("http://127.0.0.1:7860")
-    app.launch(share=True,)
+    app.launch(share=True, )
 
 
 if __name__ == "__main__":
