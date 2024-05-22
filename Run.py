@@ -9,21 +9,18 @@ from macros import lang2token
 from utils.g2p import PhonemeBpeTokenizer
 
 if __name__ == '__main__':
-
     print("shuffling train cuts")
     manifests = load_manifest("manifests/output/cuts_train.jsonl.gz")
-    manifests = manifests.shuffle(buffer_size=500_000)
+    manifests = manifests.shuffle(buffer_size=800_000)
     manifests.to_file("manifests/output/cuts_train.jsonl.gz")
     print(manifests[0])
     print(manifests[1])
     print(manifests[2])
     print(manifests[3])
 
-
-
     print("\nshuffling dev cuts")
     manifests = load_manifest("manifests/output/cuts_dev.jsonl.gz")
-    manifests = manifests.shuffle(buffer_size=100_000)
+    manifests = manifests.shuffle(buffer_size=20_000)
     manifests.to_file("manifests/output/cuts_dev.jsonl.gz")
     print(manifests[0])
     print(manifests[1])
@@ -32,12 +29,9 @@ if __name__ == '__main__':
 
     print("\nshuffling test cuts")
     manifests = load_manifest("manifests/output/cuts_test.jsonl.gz")
-    manifests = manifests.shuffle(buffer_size=100_000)
+    manifests = manifests.shuffle(buffer_size=15_000)
     manifests.to_file("manifests/output/cuts_test.jsonl.gz")
     print(manifests[0])
     print(manifests[1])
     print(manifests[2])
     print(manifests[3])
-
-
-
