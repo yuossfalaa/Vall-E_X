@@ -39,12 +39,14 @@ os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 LRSchedulerType = torch.optim.lr_scheduler._LRScheduler
 language_ID = {
-            'en': 0,
-            'zh': 1,
-            'ja': 2,
-            'ar': 3
-        }
-#pathlib.WindowsPath = pathlib.PosixPath
+    'en': 0,
+    'zh': 1,
+    'ja': 2,
+    'ar': 3
+}
+
+
+# pathlib.WindowsPath = pathlib.PosixPath
 def set_batch_count(model: Union[nn.Module, DDP], batch_count: float) -> None:
     if isinstance(model, DDP):
         # get underlying nn.Module
@@ -242,7 +244,7 @@ def get_parser():
     parser.add_argument(
         "--oom-check",
         type=str2bool,
-        default=True,
+        default=False,
         help="perform OOM check on dataloader batches before starting training.",
     )
 
@@ -493,9 +495,17 @@ def compute_loss(
 
     audio_features = batch["audio_features"].to(device)
     audio_features_lens = batch["audio_features_lens"].to(device)
-    text_language = batch["text_language"]
-    language_id = language_ID.get(text_language, -1)
-    language_ids = torch.full((text_tokens.size(0),), language_id).to(device)
+    language_ids = batch["text_language"].to(device)
+
+    '''
+    #For debug 
+    print("lang ids")
+    print(language_ids)
+    print("text tokens ids")
+    print(text_tokens)
+    print("text")
+    print(batch["text"])#'''
+
     assert audio_features.ndim == 3
 
     with torch.set_grad_enabled(is_training):
@@ -1122,7 +1132,6 @@ def scan_pessimistic_batches_for_oom(
 
 
 def main():
-
     parser = get_parser()
     TtsDataModule.add_arguments(parser)
     args = parser.parse_args()

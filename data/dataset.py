@@ -8,7 +8,12 @@ from lhotse.utils import ifnone
 
 from data.collation import TextTokenCollater
 
-
+language_ID = {
+            'en': 0,
+            'zh': 1,
+            'ja': 2,
+            'ar': 3
+        }
 class SpeechSynthesisDataset(torch.utils.data.Dataset):
     """
     The PyTorch Dataset for the speech synthesis(e.g. TTS) task.
@@ -70,11 +75,16 @@ class SpeechSynthesisDataset(torch.utils.data.Dataset):
         text_tokens, text_tokens_lens = self.text_token_collater(
             [cut.supervisions[0].custom["tokens"]["text"] for cut in cuts]
         )
-        text_language = cuts[0].supervisions[0].custom["lang"]
+        text_language = []
+        for cut in cuts:
+            if cut.supervisions[0].language is not None and cut.supervisions[0].language == "English":
+                text_language.append(language_ID.get("en"))
+            else:
+                text_language.append(language_ID.get(cut.supervisions[0].custom["lang"]))
         return {
             "utt_id": [cut.id for cut in cuts],
             "text": [cut.supervisions[0].text for cut in cuts],
-            "text_language": text_language,
+            "text_language": torch.tensor(text_language),
             "audio": audio,
             "audio_lens": audio_lens,
             "audio_features": audio_features,

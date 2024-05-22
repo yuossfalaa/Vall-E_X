@@ -297,11 +297,9 @@ def infer_from_audio(text, language, accent, audio_prompt, record_audio_prompt, 
         text_tokens_lens.to(device),
         audio_prompts,
         enroll_x_lens=enroll_x_lens,
-        top_k=-100,
-        temperature=1,
+        top_k=5000,
         prompt_language=lang_pr,
         text_language=langs if accent == "no-accent" else lang,
-        best_of=1,
     )
     # Decode with Vocos
     frames = encoded_frames.permute(2, 0, 1)
@@ -309,7 +307,7 @@ def infer_from_audio(text, language, accent, audio_prompt, record_audio_prompt, 
     samples = vocos.decode(features, bandwidth_id=torch.tensor([2], device=device))
 
     # offload model
-    # model.to('cpu')
+    model.to('cpu')
     torch.cuda.empty_cache()
 
     message = f"text prompt: {text_pr}\nsythesized text: {text}"

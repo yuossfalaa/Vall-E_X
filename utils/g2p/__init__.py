@@ -19,7 +19,7 @@ class PhonemeBpeTokenizer:
         phonemes = phonemes.replace(" ", "_")
         # 3. tokenize phonemes
         phoneme_tokens = self.tokenizer.encode(phonemes).ids
-        langs = ['ar' for tokens in phoneme_tokens]
+        #langs = ['ar' for tokens in phoneme_tokens]
         return phoneme_tokens, langs
 
 
