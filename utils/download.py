@@ -9,10 +9,10 @@ def Download_Checkpoint():
         import wget
         try:
             print(
-                "Downloading model from https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt ...")
+                "Downloading model from https://huggingface.co/datasets/yuossfalaa/Vall-E_X_Training_Data/blob/main/latest-checkpoint.pt ...")
             # download from https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt to
             # ./checkpoints/vallex-checkpoint.pt
-            wget.download("https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt",
+            wget.download("https://huggingface.co/datasets/yuossfalaa/Vall-E_X_Training_Data/blob/main/latest-checkpoint.pt",
                           out="./checkpoints/vallex-checkpoint.pt", bar=wget.bar_thermometer)
         except Exception as e:
             logging.info(e)
@@ -42,6 +42,7 @@ def Download_AR_G2P_Checkpoint():
                     os.getcwd() + "./utils/g2p/Arabic_G2P_Model/checkpoints/"))
 
 
-if __name__ == '__main__':
+def DownloadAllNeededResources():
     Download_Checkpoint()
     Download_AR_G2P_Checkpoint()
+

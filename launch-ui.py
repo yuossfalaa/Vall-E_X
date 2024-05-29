@@ -9,6 +9,8 @@ import platform
 import webbrowser
 import sys
 
+from utils.download import DownloadAllNeededResources
+
 print(f"default encoding is {sys.getdefaultencoding()},file system encoding is {sys.getfilesystemencoding()}")
 print(f"You are using Python version {platform.python_version()}")
 if (sys.version_info[0] < 3 or sys.version_info[1] < 7):
@@ -65,27 +67,14 @@ torch._C._set_graph_executor_optimize(False)
 text_tokenizer = PhonemeBpeTokenizer(tokenizer_path="./utils/g2p/bpe_69.json")
 text_collater = get_text_token_collater()
 
-# device = torch.device("cpu")
-# if torch.cuda.is_available():
-device = torch.device("cuda", 0)
-# if torch.backends.mps.is_available():
-#    device = torch.device("mps")
+device = torch.device("cpu")
+if torch.cuda.is_available():
+    device = torch.device("cuda", 0)
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+print(device)
 # VALL-E-X model
-if not os.path.exists("./checkpoints/"): os.mkdir("./checkpoints/")
-if not os.path.exists(os.path.join("./checkpoints/", "vallex-checkpoint.pt")):
-    import wget
-
-    try:
-        logging.info(
-            "Downloading model from https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt ...")
-        # download from https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt to ./checkpoints/vallex-checkpoint.pt
-        wget.download("https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt",
-                      out="./checkpoints/vallex-checkpoint.pt", bar=wget.bar_adaptive)
-    except Exception as e:
-        logging.info(e)
-        raise Exception(
-            "\n Model weights download failed, please go to 'https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt'"
-            "\n manually download model weights and put it to {} .".format(os.getcwd() + "\checkpoints"))
+DownloadAllNeededResources()
 
 model = VALLE(
     N_DIM,
