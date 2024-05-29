@@ -13,5 +13,6 @@
 - [x] **Fixing Forward Method In Vall-E X**
 - [x] Making a separate classes to tokenize popular datasets to train on them later
 - [x] Adding Custom MGB2 Loader
-- [ ] Training The Model 
+- [x] Training The Model
 
+**Very well trained Checkpoint is coming next week !!**
