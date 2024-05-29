@@ -15,4 +15,3 @@
 - [x] Adding Custom MGB2 Loader
 - [x] Training The Model
 
-**Very well trained Checkpoint is coming next week !!**
