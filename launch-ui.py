@@ -46,7 +46,7 @@ from utils.g2p import PhonemeBpeTokenizer
 from descriptions import *
 from macros import *
 from examples import *
-
+import gc
 import gradio as gr
 import whisper
 from vocos import Vocos
@@ -103,6 +103,7 @@ checkpoint = torch.load("./checkpoints/vallex-checkpoint.pt", map_location='cpu'
 missing_keys, unexpected_keys = model.load_state_dict(
     checkpoint["model"], strict=True
 )
+del checkpoint
 assert not missing_keys
 model.eval()
 
@@ -115,7 +116,11 @@ vocos = Vocos.from_pretrained('charactr/vocos-encodec-24khz').to(device)
 # ASR
 if not os.path.exists("./whisper/"): os.mkdir("./whisper/")
 try:
-    whisper_model = whisper.load_model("medium", download_root=os.path.join(os.getcwd(), "whisper")).cpu()
+    #disable if you don't need whisper or your device can't handle it
+    if True:
+        whisper_model = whisper.load_model("medium", download_root=os.path.join(os.getcwd(), "whisper")).cpu()
+    else:
+        whisper_model = None
 except Exception as e:
     logging.info(e)
     raise Exception(
@@ -165,6 +170,9 @@ def transcribe_one(model, audio_path):
     text_pr = result.text
     if text_pr.strip(" ")[-1] not in "?!.,。，？！。、":
         text_pr += "."
+
+    del audio, options, result , probs
+    gc.collect()
     return lang, text_pr
 
 
@@ -206,6 +214,8 @@ def make_npz_prompt(name, uploaded_audio, recorded_audio, transcript_content):
     # save as npz file
     np.savez(os.path.join(tempfile.gettempdir(), f"{name}.npz"),
              audio_tokens=audio_tokens, text_tokens=text_tokens, lang_code=lang2code[lang_pr])
+    # delete all variables
+    del audio_tokens, text_tokens, phonemes, lang_pr, text_pr, wav_pr, sr, uploaded_audio, recorded_audio
     return message, os.path.join(tempfile.gettempdir(), f"{name}.npz")
 
 
@@ -297,19 +307,23 @@ def infer_from_audio(text, language, accent, audio_prompt, record_audio_prompt, 
         text_tokens_lens.to(device),
         audio_prompts,
         enroll_x_lens=enroll_x_lens,
-        top_k=5000,
+        top_k=500,
         prompt_language=lang_pr,
+        best_of=5,
         text_language=langs if accent == "no-accent" else lang,
+        
     )
     # Decode with Vocos
     frames = encoded_frames.permute(2, 0, 1)
     features = vocos.codes_to_features(frames)
     samples = vocos.decode(features, bandwidth_id=torch.tensor([2], device=device))
 
+
+    del audio_prompts, text_tokens, text_prompts, phone_tokens, encoded_frames, wav_pr, sr, audio_prompt, record_audio_prompt, transcript_content
+    gc.collect()
     # offload model
     model.to('cpu')
     torch.cuda.empty_cache()
-
     message = f"text prompt: {text_pr}\nsythesized text: {text}"
     return message, (24000, samples.squeeze(0).cpu().numpy())
 
