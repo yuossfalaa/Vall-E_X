@@ -4,21 +4,21 @@ import shutil
 
 
 def Download_Checkpoint():
-    if not os.path.exists("./checkpoints/"): os.mkdir("./checkpoints/")
-    if not os.path.exists(os.path.join("./checkpoints/", "vallex-checkpoint.pt")):
+    if not os.path.exists("checkpoints/"): os.mkdir("checkpoints/")
+    if not os.path.exists(os.path.join("checkpoints/", "vallex-checkpoint.pt")):
         import wget
         try:
-            print(
-                "Downloading model from https://huggingface.co/datasets/yuossfalaa/Vall-E_X_Training_Data/blob/main/latest-checkpoint.pt ...")
-            # download from https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt to
-            # ./checkpoints/vallex-checkpoint.pt
-            wget.download("https://huggingface.co/datasets/yuossfalaa/Vall-E_X_Training_Data/blob/main/latest-checkpoint.pt",
-                          out="./checkpoints/vallex-checkpoint.pt", bar=wget.bar_thermometer)
+            print("Downloading model from https://huggingface.co/datasets/yuossfalaa/Vall-E_X_Training_Data/resolve/main/latest-checkpoint.pt ...")
+
+
+            wget.download("https://huggingface.co/datasets/yuossfalaa/Vall-E_X_Training_Data/resolve/main/latest-checkpoint.pt",
+                          out="checkpoints/vallex-checkpoint.pt", bar=wget.bar_thermometer)
+
         except Exception as e:
             logging.info(e)
             raise Exception(
                 "\n Model weights download failed, please go to "
-                "'https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt'"
+                "'https://huggingface.co/datasets/yuossfalaa/Vall-E_X_Training_Data/resolve/main/latest-checkpoint.pt'"
                 "\n manually download model weights and put it to {} .".format(os.getcwd() + "\checkpoints"))
 
 
@@ -46,3 +46,6 @@ def DownloadAllNeededResources():
     Download_Checkpoint()
     Download_AR_G2P_Checkpoint()
 
+
+if __name__ == "__main__":
+    Download_Checkpoint()
